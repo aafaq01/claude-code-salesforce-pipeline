@@ -90,3 +90,5 @@ Not verified:
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+Pipeline test.
