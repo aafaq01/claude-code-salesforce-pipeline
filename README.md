@@ -65,21 +65,27 @@ The Salesforce parts need the Salesforce CLI and an org, see below.
 
 ## Verified here vs not verified
 
-Verified on one Windows 11 machine with Node 24 (details in [docs/verification.md](docs/verification.md)):
+Verified locally (Windows 11, Node 24, details in [docs/verification.md](docs/verification.md)):
 - Hook tests pass (`node tools/test-hooks.mjs`, 26 cases, including known bypass attempts).
 - Playwright tests pass (`npm test`, 5 tests).
 - All workflow YAML parses. All XML under `force-app` is well formed.
+- The guard hook blocked a real push to `main` in a live Claude Code session.
+
+Verified in GitHub Actions on a test pull request (later closed, not merged), against a free Salesforce Developer Edition org used as `ci-sandbox`:
+- `sfdx-validate`: authenticated with `SFDX_AUTH_URL`, ran `sf project deploy validate` with `RunLocalTests`. All 12 components validated, tests ran, status Succeeded. A validate run does not deploy anything.
+- `e2e`: passed on push and on pull request.
+- `claude-review`: posted a review comment on the pull request.
+- `promote-production`: skipped, as designed.
 
 Not verified:
-- Apex was never compiled. Test results and the 85 percent coverage target are by design only, not measured.
-- Nothing was deployed. No Salesforce org was reachable and the `sf` CLI was not installed.
-- No GitHub Actions workflow has run. The `sf` command flags, API version 65.0 and action versions were not tested in CI.
-- The hooks were tested by piping JSON, not inside a live Claude Code session.
-- The Flow is well formed XML only. Its schema validity was not checked.
+- The Apex coverage percentage was not read from the run, so the 85 percent target is by design only.
+- The Flow deployed in validation, but its owner assignment is not covered by any test.
+- Production promotion was never run. No prod org was used.
 - The guard hook is a safety net, not a security boundary. It splits commands naively, so it does not catch a deploy that relies on a default org of `prod`, a bare `git push` made while on `main`, or shell variables and subshells.
 - A green `validate` check with no `SFDX_AUTH_URL` secret only means the XML parsed. The log says org validation was skipped.
-- The e2e tests run against the JavaScript demo app, not against the Salesforce rule. Only the Apex tests cover `Require_Tax_Id`, and they have never run.
+- The e2e tests run against the JavaScript demo app, not against the Salesforce rule. Only the Apex tests cover `Require_Tax_Id`.
 - The deny rule in `.claude/settings.json` blocks the Edit and Write tools only. Shell commands can still change workflows, so branch protection is the real guard.
+- `claude-review` only runs on a pull request when the workflow file matches the one on `main`, so a PR that edits it gets no review. This is the action's own safety rule.
 
 ## What you must configure
 

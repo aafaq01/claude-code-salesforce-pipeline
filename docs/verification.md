@@ -11,9 +11,21 @@ What was actually run while building this repo, on one Windows 11 machine with N
 | `.github/workflows/*.yml` | Parsed with Python yaml, all valid |
 | JSON config files | Parsed, valid |
 
+## GitHub Actions run (test pull request, later closed)
+
+Org: a free Developer Edition org used as `ci-sandbox`.
+
+| Workflow | Result |
+| --- | --- |
+| `sfdx-validate` / `validate` | Passed. 12 of 12 components, Apex tests ran, status Succeeded |
+| `e2e` | Passed on push and pull request |
+| `claude-review` | Passed and posted a review comment (after adding `id-token: write`) |
+| `promote-production` | Skipped, by design |
+
+The first review run failed because the workflow lacked `id-token: write`. The second run was skipped by the action because the PR changed the workflow file. The third run, after the fix reached `main`, worked.
+
 ## Not run
 
-- Apex compile and Apex tests, no Salesforce org or `sf` CLI here.
-- Any GitHub Actions run.
-- The hooks inside a live Claude Code session.
-- Code Analyzer, PMD, or any deploy validation.
+- The Apex coverage percentage, it was not read from the run.
+- Production promotion.
+- Behavior of the Flow, it has no test.
