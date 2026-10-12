@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer onboarding</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 28rem; margin: 2rem auto; padding: 0 1rem; }
+  label { display: block; margin: 1rem 0 0.25rem; }
+  input, select { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+  button { margin-top: 1rem; padding: 0.5rem 1rem; }
+  [hidden] { display: none; }
+  #error { color: #b00020; }
+</style>
+</head>
+<body>
+<h1>Customer onboarding</h1>
+<form id="form" novalidate>
+  <section data-step="1">
+    <h2>Step 1 of 3: Company</h2>
+    <label for="companyName">Company name</label>
+    <input id="companyName" name="companyName" required>
+    <label for="ownerEmail">Owner email</label>
+    <input id="ownerEmail" name="ownerEmail" type="email" required>
+    <button type="button" data-next>Next</button>
+  </section>
+  <section data-step="2" hidden>
+    <h2>Step 2 of 3: Product and tax</h2>
+    <label for="product">Product</label>
+    <select id="product" name="product">
+      <option value="Standard">Standard</option>
+      <option value="Premium">Premium</option>
+    </select>
+    <label for="taxId">Tax ID</label>
+    <input id="taxId" name="taxId">
+    <button type="button" data-back>Back</button>
+    <button type="button" data-next>Next</button>
+  </section>
+  <section data-step="3" hidden>
+    <h2>Step 3 of 3: Review</h2>
+    <pre id="summary"></pre>
+    <button type="button" data-back>Back</button>
+    <button type="submit">Submit</button>
+  </section>
+</form>
+<p id="error" role="alert"></p>
+<p id="result" hidden>Created record <span id="recordId"></span></p>
+<script>
+  const form = document.getElementById('form');
+  const steps = [...form.querySelectorAll('[data-step]')];
+  let current = 0;
+  const show = (i) => { current = i; steps.forEach((s, n) => (s.hidden = n !== i)); };
+  const data = () => ({
+    companyName: form.companyName.value,
+    ownerEmail: form.ownerEmail.value,
+    product: form.product.value,
+    taxId: form.taxId.value,
+    source: 'WebForm',
+  });
+  form.addEventListener('click', (e) => {
+    if (e.target.matches('[data-next]')) {
+      document.getElementById('summary').textContent = JSON.stringify(data(), null, 2);
+      show(current + 1);
+    }
+    if (e.target.matches('[data-back]')) show(current - 1);
+  });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = document.getElementById('error');
+    err.textContent = '';
+    const res = await fetch('/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data()),
+    });
+    const body = await res.json();
+    if (!res.ok) { err.textContent = body.error; return; }
+    document.getElementById('recordId').textContent = body.id;
+    document.getElementById('result').hidden = false;
+    form.hidden = true;
+  });
+</script>
+</body>
+</html>

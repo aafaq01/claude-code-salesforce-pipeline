@@ -1,0 +1,11 @@
+node_modules/
+test-results/
+playwright-report/
+.sfdx/
+.sf/
+*.log
+.env
+.env.*
+PLAN.md
+REVIEW.md
+.claude/settings.local.json

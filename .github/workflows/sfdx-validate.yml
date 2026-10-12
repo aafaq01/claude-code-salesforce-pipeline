@@ -1,0 +1,81 @@
+name: sfdx-validate
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      promote:
+        description: "Promote main to production (needs reviewer approval)"
+        type: boolean
+        default: false
+
+jobs:
+  validate:
+    name: validate
+    if: github.event_name == 'pull_request' || inputs.promote == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Check XML is well formed
+        run: |
+          python3 - <<'PY'
+          import glob, sys
+          from xml.dom import minidom
+          bad = 0
+          for f in glob.glob("force-app/**/*.xml", recursive=True):
+              try:
+                  minidom.parse(f)
+              except Exception as e:
+                  print("BAD XML", f, e)
+                  bad = 1
+          sys.exit(bad)
+          PY
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli
+      - name: Static analysis (advisory)
+        continue-on-error: true
+        run: sf code-analyzer run --workspace force-app
+      - name: Org validation skipped notice
+        if: env.SFDX_AUTH_URL == ''
+        run: echo "::notice::SFDX_AUTH_URL is not set. Org validation and Apex tests were SKIPPED. Only static checks ran."
+      - name: Validate deploy and run all Apex tests
+        if: env.SFDX_AUTH_URL != ''
+        run: |
+          echo "$SFDX_AUTH_URL" > "$RUNNER_TEMP/auth.txt"
+          sf org login sfdx-url --sfdx-url-file "$RUNNER_TEMP/auth.txt" --alias ci-sandbox
+          rm -f "$RUNNER_TEMP/auth.txt"
+          sf project deploy validate --source-dir force-app --test-level RunLocalTests --target-org ci-sandbox
+
+  promote-production:
+    name: promote-production
+    if: github.event_name == 'workflow_dispatch' && inputs.promote == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli
+      - name: Deploy to production
+        env:
+          PROD_SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL }}
+        run: |
+          if [ -z "$PROD_SFDX_AUTH_URL" ]; then
+            echo "::error::SFDX_AUTH_URL is not set in the production environment."
+            exit 1
+          fi
+          echo "$PROD_SFDX_AUTH_URL" > "$RUNNER_TEMP/auth.txt"
+          sf org login sfdx-url --sfdx-url-file "$RUNNER_TEMP/auth.txt" --alias prod
+          rm -f "$RUNNER_TEMP/auth.txt"
+          sf project deploy start --source-dir force-app --test-level RunLocalTests --target-org prod

@@ -1,0 +1,15 @@
+{
+  "name": "onboarding-e2e-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo onboarding app that stands in for the downstream Salesforce record API, with Playwright e2e tests.",
+  "scripts": {
+    "start": "node demo-app/server.js",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0"
+  }
+}

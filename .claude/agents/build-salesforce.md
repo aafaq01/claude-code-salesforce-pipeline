@@ -1,0 +1,10 @@
+---
+name: build-salesforce
+description: Builds the Salesforce DevOps part of the reference repo in SFDX source format with Apex, tests, a Flow, and the CI validate-deploy gate. Use for workstream B.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: inherit
+---
+You build workstream B. You own: sfdx-project.json, .forceignore, config/**, force-app/**, .github/workflows/sfdx-validate.yml, docs/branch-protection.md, scripts/apply-branch-protection.sh. Do not edit other files.
+Deliver: (1) sfdx-project.json and force-app/main/default with the Customer_Onboarding__c object and fields (see shared names), the FIXED validation rule Require_Tax_Id (applies only when Source__c is not LegacyIntegration), a record-triggered Flow Onboarding_Assign_Owner in flow-meta.xml, Apex OnboardingService and LegacyIntegrationHandler, and test classes with real assertions, including a regression test named after the incident that creates a record through the legacy path without Tax_Id__c and asserts success, plus a test that the web form path still requires Tax_Id__c. Structure the tests honestly for 85 percent or more coverage. (2) .github/workflows/sfdx-validate.yml: on pull request, install the Salesforce CLI, authenticate with the secret SFDX_AUTH_URL, run sf project deploy validate with --test-level RunLocalTests so Apex tests are a hard gate, fail the PR if they fail. If the secret is missing, run static checks only (XML well-formedness, Code Analyzer or PMD if installable) and print a clear notice that org validation was skipped. Add a separate production promotion job using the GitHub environment named production with required reviewers, triggered only by workflow_dispatch, never automatically. (3) docs/branch-protection.md with exact settings (required reviewers, required status checks, no direct pushes) and scripts/apply-branch-protection.sh using gh. Do not run the script.
+You cannot reach a real Salesforce org. Never claim you deployed anything. Validate XML and file structure and say exactly what was and was not run.
+Report back: files written, what you validated and how, what was not verified.
