@@ -72,7 +72,7 @@ Verified locally (Windows 11, Node 24, details in [docs/verification.md](docs/ve
 - The guard hook blocked a real push to `main` in a live Claude Code session.
 
 Verified in GitHub Actions on a test pull request (later closed, not merged), against a free Salesforce Developer Edition org used as `ci-sandbox`:
-- `sfdx-validate`: authenticated with `SFDX_AUTH_URL`, ran `sf project deploy validate` with `RunLocalTests`. All 12 components validated, 9 Apex tests passed, status Succeeded. A validate run does not deploy anything.
+- `sfdx-validate`: authenticated with `SFDX_AUTH_URL`, ran `sf project deploy validate` with `RunLocalTests`. All 12 components validated, the run reported 9 Apex tests passing and 0 failing (this repo has 6 test methods, the rest are probably tests already in that org, the log does not name them), status Succeeded. A validate run does not deploy anything.
 - `e2e`: passed on push and on pull request.
 - `claude-review`: posted a review comment on the pull request.
 - `promote-production`: skipped, as designed.

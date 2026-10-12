@@ -18,8 +18,8 @@ Org: a free Developer Edition org used as `ci-sandbox`.
 
 | Workflow | Result |
 | --- | --- |
-| `sfdx-validate` / `validate` | Passed. 12 of 12 components, 9 Apex tests passing, 0 failing, status Succeeded. [run](https://github.com/aafaq01/claude-code-salesforce-pipeline/actions/runs/38229837414) |
-| `e2e` | Passed on push and pull request. [run](https://github.com/aafaq01/claude-code-salesforce-pipeline/actions/runs/38232283778) |
+| `sfdx-validate` / `validate` | Passed. 12 of 12 components, the log reports "Passing: 9, Failing: 0" without test names. This repo has 6 test methods, so the other 3 are probably tests already in that org (not confirmed). Status Succeeded. [run](https://github.com/aafaq01/claude-code-salesforce-pipeline/actions/runs/38229837414) |
+| `e2e` | Passed on push ([run](https://github.com/aafaq01/claude-code-salesforce-pipeline/actions/runs/38232277697)) and on pull request ([run](https://github.com/aafaq01/claude-code-salesforce-pipeline/actions/runs/38232283778)) |
 | `claude-review` | Passed and posted a review comment, after adding `id-token: write`. [run](https://github.com/aafaq01/claude-code-salesforce-pipeline/actions/runs/38232283946) |
 | `promote-production` | Skipped, by design |
 
